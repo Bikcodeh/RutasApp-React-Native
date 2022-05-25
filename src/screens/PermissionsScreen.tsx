@@ -21,7 +21,7 @@ export const PermissionsScreen = () => {
     }
 
     return (
-        <View>
+        <View style={styles.container}>
             <Text>PermissionsScreen</Text>
             <Button 
                 title='Permission'
