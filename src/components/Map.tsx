@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import MapView, { Polyline } from 'react-native-maps'
 import { LoadingScreen } from '../screens/LoadingScreen';
 import { useLocation } from './../hooks/useLocation';
@@ -18,6 +18,8 @@ export const Map = () => {
     const mapViewRef = useRef<MapView>();
     const following = useRef<boolean>(true);
 
+    const [showPolyline, setShowPolyline] = useState<boolean>(false);
+
     const centerPosition = async () => {
 
         const { latitude, longitude } = await getCurrentLocation()
@@ -34,7 +36,7 @@ export const Map = () => {
 
         followUserLocation();
         return () => {
-                stopFollowUserLocation();
+            stopFollowUserLocation();
         }
     }, [])
 
@@ -68,7 +70,7 @@ export const Map = () => {
                     latitudeDelta: 0.0922,
                     longitudeDelta: 0.0421,
                 }}
-                onTouchStart= { () =>{
+                onTouchStart={() => {
                     following.current = false;
                 }}
             >
@@ -84,11 +86,15 @@ export const Map = () => {
                 />
                     */
                 }
-                <Polyline 
-                    coordinates={routeLines}
-                    strokeColor="black"
-                    strokeWidth={3}
-                />
+                {
+                    showPolyline && (
+                        <Polyline
+                            coordinates={routeLines}
+                            strokeColor="black"
+                            strokeWidth={3}
+                        />
+                    )
+                }
             </MapView>
             <Fab
                 iconName='compass-outline'
@@ -96,6 +102,15 @@ export const Map = () => {
                 style={{
                     position: 'absolute',
                     bottom: 16,
+                    right: 16
+                }}
+            />
+             <Fab
+                iconName='brush-outline'
+                onPress={ () => setShowPolyline( value => !value)}
+                style={{
+                    position: 'absolute',
+                    bottom: 80,
                     right: 16
                 }}
             />
