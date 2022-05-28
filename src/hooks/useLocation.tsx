@@ -1,5 +1,5 @@
 import Geolocation from '@react-native-community/geolocation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Location } from './../interfaces/appInterfaces';
 
 export const useLocation = () => {
@@ -9,16 +9,23 @@ export const useLocation = () => {
         latitude: 0,
         longitude: 0
     })
+    const [userLocation, setUserLocation] = useState<Location>({
+        latitude: 0,
+        longitude: 0
+    });
+
+    const watchId = useRef<number>();
 
     useEffect(() => {
-        getCurrentLocation().then( location => {
+        getCurrentLocation().then(location => {
             setInitialPosition(location);
+            setUserLocation(location);
             setHasLocation(true);
         });
     }, [])
 
     const getCurrentLocation = (): Promise<Location> => {
-        return new Promise( (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             Geolocation.getCurrentPosition(
                 ({ coords }) => {
                     resolve({
@@ -34,9 +41,32 @@ export const useLocation = () => {
         });
     }
 
-  return {
-    hasLocation,
-    initialPosition,
-    getCurrentLocation
-  }
+    const followUserLocation = () => {
+       watchId.current = Geolocation.watchPosition(
+            ({ coords }) => {
+                setUserLocation({
+                    latitude: coords.latitude,
+                    longitude: coords.longitude
+                })
+            }, (err) => console.log(err),
+            {
+                enableHighAccuracy: true,
+                distanceFilter: 10
+            })
+    }
+
+    const stopFollowUserLocation = () => {
+        if(watchId.current) {
+            Geolocation.clearWatch(watchId.current);
+        }
+    }
+
+    return {
+        hasLocation,
+        initialPosition,
+        getCurrentLocation,
+        followUserLocation,
+        stopFollowUserLocation,
+        userLocation
+    }
 }

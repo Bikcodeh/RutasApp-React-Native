@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import MapView from 'react-native-maps'
 import { LoadingScreen } from '../screens/LoadingScreen';
 import { useLocation } from './../hooks/useLocation';
@@ -6,13 +6,21 @@ import { Fab } from './Fab';
 
 export const Map = () => {
 
-    const { hasLocation, initialPosition, getCurrentLocation } = useLocation();
+    const {
+        hasLocation,
+        initialPosition,
+        userLocation,
+        getCurrentLocation,
+        followUserLocation,
+        stopFollowUserLocation
+    } = useLocation();
     const mapViewRef = useRef<MapView>();
+    const following = useRef<boolean>(true);
 
     const centerPosition = async () => {
 
-        const {latitude, longitude} = await getCurrentLocation()
-
+        const { latitude, longitude } = await getCurrentLocation()
+        following.current = true;
         mapViewRef.current?.animateCamera({
             center: {
                 latitude,
@@ -21,14 +29,34 @@ export const Map = () => {
         })
     }
 
+    useEffect(() => {
+
+        followUserLocation();
+        return () => {
+                stopFollowUserLocation();
+        }
+    }, [])
+
+    useEffect(() => {
+
+        if (!following.current) return;
+        const { latitude, longitude } = userLocation;
+
+        mapViewRef.current?.animateCamera({
+            center: { latitude, longitude }
+        });
+    }, [userLocation])
+
+
+
     if (!hasLocation) {
         return <LoadingScreen />
     }
-    
+
     return (
         <>
             <MapView
-                ref={ (element) => mapViewRef.current = element! }
+                ref={(element) => mapViewRef.current = element!}
                 style={{
                     flex: 1
                 }}
@@ -38,6 +66,9 @@ export const Map = () => {
                     longitude: initialPosition.longitude,
                     latitudeDelta: 0.0922,
                     longitudeDelta: 0.0421,
+                }}
+                onTouchStart= { () =>{
+                    following.current = false;
                 }}
             >
                 {
@@ -53,10 +84,10 @@ export const Map = () => {
                     */
                 }
             </MapView>
-            <Fab 
+            <Fab
                 iconName='compass-outline'
-                onPress={ centerPosition }
-                style ={{
+                onPress={centerPosition}
+                style={{
                     position: 'absolute',
                     bottom: 16,
                     right: 16
