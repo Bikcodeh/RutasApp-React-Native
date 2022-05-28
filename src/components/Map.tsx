@@ -15,6 +15,7 @@ export const Map = () => {
         followUserLocation,
         stopFollowUserLocation
     } = useLocation();
+    
     const mapViewRef = useRef<MapView>();
     const following = useRef<boolean>(true);
 
