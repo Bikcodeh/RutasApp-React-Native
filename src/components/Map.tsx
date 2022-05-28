@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import MapView from 'react-native-maps'
+import MapView, { Polyline } from 'react-native-maps'
 import { LoadingScreen } from '../screens/LoadingScreen';
 import { useLocation } from './../hooks/useLocation';
 import { Fab } from './Fab';
@@ -10,6 +10,7 @@ export const Map = () => {
         hasLocation,
         initialPosition,
         userLocation,
+        routeLines,
         getCurrentLocation,
         followUserLocation,
         stopFollowUserLocation
@@ -83,6 +84,11 @@ export const Map = () => {
                 />
                     */
                 }
+                <Polyline 
+                    coordinates={routeLines}
+                    strokeColor="black"
+                    strokeWidth={3}
+                />
             </MapView>
             <Fab
                 iconName='compass-outline'
